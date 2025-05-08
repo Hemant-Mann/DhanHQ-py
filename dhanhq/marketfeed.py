@@ -458,7 +458,7 @@ class DhanFeed:
         self.instruments = list(unique_symbols_set)
 
         # If the WebSocket is open, send the subscription packet for the new symbols
-        if self.ws and not self.ws.closed:
+        if self.ws and self.ws.state != websockets.protocol.State.CLOSED:
             # Prepare the instruments list for subscription
             group_size = 100
             new_instrument_list = self.validate_and_process_tuples(symbols, group_size)
@@ -485,7 +485,9 @@ class DhanFeed:
                                     } for ex, token in batch
                                 ]
                             }
-                            asyncio.ensure_future(self.ws.send(json.dumps(subscription_message)))
+                            asyncio_future = asyncio.run_coroutine_threadsafe(self.ws.send(json.dumps(subscription_message)))
+                            asyncio_future.result()
+                            # asyncio.ensure_future()
 
     def unsubscribe_symbols(self, symbols): 
         """Function to unsubscribe symbols from connection when connection is already active."""
@@ -495,7 +497,7 @@ class DhanFeed:
         self.instruments = list(unique_symbols_set)
 
         # If the WebSocket is open, send the unsubscription packet for the symbols
-        if self.ws and not self.ws.closed:
+        if self.ws and self.ws.state != websockets.protocol.State.CLOSED:
             # Prepare the instruments list for unsubscription
             group_size = 100
             instrument_list_to_unsubscribe = self.validate_and_process_tuples(symbols, group_size)
@@ -525,4 +527,6 @@ class DhanFeed:
                                     } for ex, token in batch
                                 ]
                             }
-                            asyncio.ensure_future(self.ws.send(json.dumps(unsubscription_message)))
+                            asyncio_future = asyncio.run_coroutine_threadsafe(self.ws.send(json.dumps(unsubscription_message)), self.loop)
+                            asyncio_future.result()
+                            # asyncio.ensure_future()
