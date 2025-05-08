@@ -485,7 +485,7 @@ class DhanFeed:
                                     } for ex, token in batch
                                 ]
                             }
-                            asyncio_future = asyncio.run_coroutine_threadsafe(self.ws.send(json.dumps(subscription_message)))
+                            asyncio_future = asyncio.run_coroutine_threadsafe(self.ws.send(json.dumps(subscription_message)), self.loop)
                             asyncio_future.result()
                             # asyncio.ensure_future()
 
